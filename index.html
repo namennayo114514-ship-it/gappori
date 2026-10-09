@@ -48,6 +48,9 @@ details summary{cursor:pointer;color:var(--ink);font-size:14px}
 <div class="row">
 <div><label for="bet">1皿のBET(枚)</label><input id="bet" type="number" value="10" min="1"></div>
 <div><label for="f">フリーチョイス確率(%)</label><input id="f" type="number" value="78" min="0" max="100"></div>
+</div>
+<div class="row">
+<div><label for="mn">最小皿数</label><input id="mn" type="number" value="1" min="1" max="15"></div>
 <div><label for="mx">最大皿数</label><input id="mx" type="number" value="10" min="1" max="15"></div>
 </div>
 <div class="row">
@@ -121,7 +124,7 @@ function update(){
  const cand=gen(b.n).map(S=>({S,pay:payout(S,b.cnt,bet)})).filter(c=>c.pay>bet);
  cand.forEach(c=>{const h0=new Set(hits(D,c.S,0));c.p0=0;c.p1=0;c.pe=0;
   c.h=hits(D,c.S,1).map(j=>{const z=h0.has(j),h=z?1:f;c.p1+=D[j].p;c.pe+=D[j].p*h;if(z)c.p0+=D[j].p;return[j,h]})});
- const R=[];const mx=Math.min(15,Math.max(1,Math.round(+$('mx').value)||10));for(let N=1;N<=mx;N++){const r=build(D,cand,N,bet,k);if(r.sel.length==N)R.push(r)}
+ const R=[];const cl=(x,d)=>Math.min(15,Math.max(1,Math.round(+x)||d));let mn=cl($('mn').value,1),mx=cl($('mx').value,10);if(mn>mx)[mn,mx]=[mx,mn];for(let N=mn;N<=mx;N++){const r=build(D,cand,N,bet,k);if(r.sel.length==N)R.push(r)}
  if(!R.length){$('res').innerHTML=`<p>条件を満たす組み合わせがありません。攻めの目標を下げてください。</p>`;fcRender();return}
  const best=R.reduce((a,r)=>r.ev>a.ev?r:a);
  G.sel=best.sel;
@@ -155,7 +158,7 @@ function fcRender(){
 }
 $('pad').innerHTML=['1','2','3','4','5','お','←','クリア'].map(t=>`<button type="button" class="${t=='お'?'o':''}" data-t="${t}">${t}</button>`).join('');
 $('pad').onclick=e=>{const t=e.target.dataset.t;if(!t)return;const a=$('board').value.split(/[\s,、\-ー−–—]+/).filter(Boolean);if(t=='←')a.pop();else if(t=='クリア')a.length=0;else a.push(t);$('board').value=a.join('-');update()};
-['board','bet','f','mx','mode','k','q'].forEach(i=>$(i).addEventListener('input',update));
+['board','bet','f','mn','mx','mode','k','q'].forEach(i=>$(i).addEventListener('input',update));
 document.querySelectorAll('#o5 input').forEach(i=>i.addEventListener('input',update));
 update();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
