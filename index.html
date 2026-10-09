@@ -22,6 +22,7 @@ input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid 
 input[type=checkbox]{width:auto}input[type=range]{padding:0}
 .row{display:flex;gap:10px}.row>div{flex:1}
 .board{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.pad button{font:inherit;font-size:18px;padding:12px 0;border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:4px;touch-action:manipulation}.pad button.o{border-color:var(--hit);color:var(--hit)}.pad button:active{background:var(--ink);color:var(--card)}
 .chip{border:1px solid var(--ink);border-radius:3px;padding:1px 8px;font-size:13px}.chip.o{border-color:var(--hit);color:var(--hit)}
 .warn{color:var(--hit);font-size:13px;margin-top:6px}
 .plate{border-top:1px solid var(--line);padding:9px 0}.plate:first-of-type{border-top:0}
@@ -41,7 +42,8 @@ details summary{cursor:pointer;color:var(--ink);font-size:14px}
 <section>
 <h2>盤面と条件</h2>
 <label for="board">盤面(円周の順。おやじは「お」)</label>
-<input id="board" value="4-お-4-3-3-1" inputmode="text" autocomplete="off">
+<input id="board" value="4-お-4-3-3-1" inputmode="none" autocomplete="off">
+<div class="pad" id="pad"></div>
 <div class="board" id="legend"></div><div class="warn" id="warn"></div>
 <div class="row">
 <div><label for="bet">1皿のBET(枚)</label><input id="bet" type="number" value="10" min="1"></div>
@@ -112,7 +114,7 @@ function update(){
  const b=parse(),q=+$('q').value/100,bet=+$('bet').value||10,f=Math.min(1,Math.max(0,(+$('f').value||0)/100)),mode=$('mode').value,k=mode=='a'?Math.max(1,+$('k').value||2):1;
  $('qv').textContent=$('q').value+'%';
  $('legend').innerHTML=b.seq.map(s=>s.o?'<span class="chip o">お</span>':`<span class="chip">${LB[s.i]}(${s.c})</span>`).join('');
- $('warn').textContent=b.len!=16?`合計${b.len}マスです(通常は16マス)。このまま計算します。`:'';
+ $('warn').textContent=`合計 ${b.len}/16マス`+(b.len>16?'(多すぎます)':'');$('warn').style.color=b.len==16?'var(--ok)':b.len>16?'var(--hit)':'var(--mut)';
  if(!b.n||b.n>LB.length){$('res').textContent='盤面を入力してください。例: 4-お-4-3-3-1';return}
  const D=dist(b.pk,b.n,q);G={b,D,bet,sel:[]};
  const cand=gen(b.n).map(S=>({S,pay:payout(S,b.cnt,bet)})).filter(c=>c.pay>bet);
@@ -150,6 +152,8 @@ function fcRender(){
    t=`チョイス <b>${LB[best]}</b> → 残り2球で当たる確率 <b>${pc(bp)}</b>(FCなし ${pc(base)})`+`<br><span class="meta">あと${need}個: ${name(m.slice(0,n))}</span>`}
   return`<div class="plate"><div class="combo">${name(c.S)}</div><div style="font-size:14px">${t}</div></div>`}).join('');
 }
+$('pad').innerHTML=['1','2','3','4','5','お','←','クリア'].map(t=>`<button type="button" class="${t=='お'?'o':''}" data-t="${t}">${t}</button>`).join('');
+$('pad').onclick=e=>{const t=e.target.dataset.t;if(!t)return;const a=$('board').value.split(/[\s,、\-ー−–—]+/).filter(Boolean);if(t=='←')a.pop();else if(t=='クリア')a.length=0;else a.push(t);$('board').value=a.join('-');update()};
 ['board','bet','f','mode','k','q'].forEach(i=>$(i).addEventListener('input',update));
 document.querySelectorAll('#o5 input').forEach(i=>i.addEventListener('input',update));
 update();
