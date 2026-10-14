@@ -165,14 +165,14 @@ function update(){
  const dopa=mode=='dopa';
  const pickSet=()=>{let bs=null,bq=-1e9,bB=0,bpool=null;
   for(let B=5;B<=30*P;B+=5){
-   const pool=cand.filter(c=>c.pay>=TOL*B),miss=new Float64Array(D.length).fill(1),set=[],used=new Set();let cost=0;
+   const pool=cand.filter(c=>c.pay>=TOL*B&&(dopa||c.net>0)),miss=new Float64Array(D.length).fill(1),set=[],used=new Set();let cost=0;
    while(set.length<3*P){let best=null,bg=-1e18;
-    for(const c of pool){if(cost+BET[c.t]>B||used.has(c))continue;let g;if(dopa){g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h}else g=c.net;if(g>bg){bg=g;best=c}}
+    for(const c of pool){if(cost+BET[c.t]>B||used.has(c))continue;let g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h;if(g>bg){bg=g;best=c}}
     if(!best)break;used.add(best);set.push(best);cost+=BET[best.t];best.h.forEach(([j,h])=>miss[j]*=1-h)}
    if(!set.length)continue;
-   const sc=dopa?D.reduce((a,d,j)=>a+d.p*(1-miss[j]),0)  :set.reduce((a,c)=>a+c.net,0);
-   if(!bs||set.length>bs.length||(set.length==bs.length&&sc>bq+1e-9)){bq=sc;bs=set;bB=B;bpool=pool}}
-  if(!bs||!dopa)return bs;
+   const sc=D.reduce((a,d,j)=>a+d.p*(1-miss[j]),0);
+   const bt=!bs?true:dopa?(set.length>bs.length||(set.length==bs.length&&sc>bq+1e-9)):sc>bq+1e-9;if(bt){bq=sc;bs=set;bB=B;bpool=pool}}
+  if(!bs)return bs;
   for(let pass=0;pass<3;pass++){let ch=false;
    for(let i=0;i<bs.length;i++){const miss=new Float64Array(D.length).fill(1);bs.forEach((c,k)=>{if(k!=i)c.h.forEach(([j,h])=>miss[j]*=1-h)});
     const co=bs.reduce((a,c,k)=>k==i?a:a+BET[c.t],0),gn=c=>{let g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h;return g};
@@ -189,8 +189,8 @@ function update(){
  const row=(c,col,inp)=>{const key=c.t+'|'+c.S.join(','),st=ROUND.ord[key]||{};
   return`<div class="plate"><div class="stair mini">${stair(b,c.S,col)}</div><div><div><b>${TN[c.t]}</b>　配当(予測) <b>${c.pay.toFixed(0)}枚</b></div><div class="m">期待収支 ${fm(c.net)}/回 ／ 当たる確率 ${pc(c.pe)}</div>`
   +(inp?`<div class="act"><label>実際の配当 <input type="number" class="ap" data-key="${key}" value="${st.pay??''}"></label>`+(c.t!='d'?`<label>FC <select class="afc" data-key="${key}"><option value="">未入力</option><option value="y"${st.fc=='y'?' selected':''}>もらえた</option><option value="n"${st.fc=='n'?' selected':''}>なし</option></select></label>`:'')+`</div>`:'')+`</div></div>`};
- $('res').innerHTML=(sel?'':'<p class="tip neg">条件を満たす注文がありません。配当の下限を下げてください。</p>')
-  +(()=>{const all=gs.flat();if(!all.length)return'';const cost=all.reduce((a,c)=>a+BET[c.t],0),ev=all.reduce((a,c)=>a+c.net,0);return`<div class="total"><div class="tl">${P>1?`全員合計(${all.length}注文)`:`合計(${all.length}注文)`}・投入 ${cost}枚</div><div class="tv"><div><span class="k">どれか当たる確率</span><b>${pc(unionP(D,all))}</b></div><div><span class="k">期待収支</span><b>${fm(ev)}</b></div><div><span class="k">4球目までドパドパできる確率</span><b>${pc(alive4(all))}</b></div></div><div class="tl">当たれば、全体の投入の${Math.round(TOL*100)}%以上の配当が返る注文だけを選んでいます。</div></div>`})()
+ $('res').innerHTML=(sel?'':dopa?'<p class="tip neg">条件を満たす注文がありません。配当の下限を下げてください。</p>':'<p class="tip neg">期待収支がプラスの注文が、条件の中にありません。配当の下限を下げるか、ドーパミン優先を使ってください。</p>')
+  +(()=>{const all=gs.flat();if(!all.length)return'';const cost=all.reduce((a,c)=>a+BET[c.t],0),ev=all.reduce((a,c)=>a+c.net,0);return`<div class="total"><div class="tl">${P>1?`全員合計(${all.length}注文)`:`合計(${all.length}注文)`}・投入 ${cost}枚</div><div class="tv"><div><span class="k">どれか当たる確率</span><b>${pc(unionP(D,all))}</b></div><div><span class="k">期待収支</span><b>${fm(ev)}</b></div><div><span class="k">4球目までドパドパできる確率</span><b>${pc(alive4(all))}</b></div></div><div class="tl">当たれば、全体の投入の${Math.round(TOL*100)}%以上の配当が返る注文だけを選んでいます。${dopa?'':'期待収支がプラスの注文だけから、どれか当たる確率が最大になる組み合わせです。'}</div></div>`})()
   +gs.map((g,k)=>{if(!g.length||(view=='me'&&P>1&&k!=me-1))return'';
    const cost=g.reduce((a,c)=>a+BET[c.t],0),ev=g.reduce((a,c)=>a+c.net,0);
    return`<div class="pl" style="--c:${PC[k]}"><div class="ph"><b>${P==1?'おすすめ':view=='me'?`あなた(${k+1}人目)`:`${k+1}人目`}</b><span>投入${cost}枚・どれか当たる確率 ${pc(unionP(D,g))}・期待収支 ${fm(ev)}</span></div>`+g.map(c=>row(c,PC[k],true)).join('')+'</div>'}).join('')
