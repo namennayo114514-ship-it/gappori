@@ -7,10 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>すしがっぽり 舟盛ベット計算</title>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#eef1f3;--fg:#17212b;--mut:#5d6b78;--card:#fff;--line:#cfd7de;--ink:#1f3a5f;--hit:#c62f47;--ok:#1d7a4d}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#eef1f3;--fg:#17212b;--mut:#5d6b78;--card:#fff;--line:#cfd7de;--ink:#1f3a5f;--hit:#c62f47;--ok:#1d7a4d;--p1:#2563c9;--p2:#b85c00;--p3:#1f8a5b;--p4:#7c4dc4;--p5:#c2257a;--p6:#0b7f91;--p7:#8a6a00;--p8:#5b6770}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--fg:#e8edf2;--mut:#93a1ae;--card:#18212b;--line:#2c3947;--ink:#8db4ee;--hit:#ff6b81;--ok:#58d39b}}
-:root[data-theme="dark"]{--bg:#10161d;--fg:#e8edf2;--mut:#93a1ae;--card:#18212b;--line:#2c3947;--ink:#8db4ee;--hit:#ff6b81;--ok:#58d39b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--fg:#e8edf2;--mut:#93a1ae;--card:#18212b;--line:#34434f;--ink:#8db4ee;--hit:#ff6b81;--ok:#58d39b;--p1:#6ea1ff;--p2:#ffa94d;--p3:#58d39b;--p4:#b794f6;--p5:#ff7ac0;--p6:#4fd1e5;--p7:#e6c34a;--p8:#aab4bd}}
+:root[data-theme="dark"]{--bg:#10161d;--fg:#e8edf2;--mut:#93a1ae;--card:#18212b;--line:#34434f;--ink:#8db4ee;--hit:#ff6b81;--ok:#58d39b;--p1:#6ea1ff;--p2:#ffa94d;--p3:#58d39b;--p4:#b794f6;--p5:#ff7ac0;--p6:#4fd1e5;--p7:#e6c34a;--p8:#aab4bd}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 "Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif}
 main{max-width:640px;margin:0 auto;padding:16px 14px 40px}
@@ -19,63 +19,76 @@ h1{font-size:20px;margin:4px 0 2px;color:var(--ink)}h2{font-size:16px;margin:0 0
 section{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:12px}
 label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
 input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:7px 9px;width:100%}
-input[type=checkbox]{width:auto}input[type=range]{padding:0}
+input[type=range]{padding:0}
 .row{display:flex;gap:10px}.row>div{flex:1}
-.board{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.pad button{font:inherit;font-size:18px;padding:12px 0;border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:4px;touch-action:manipulation}.pad button.o{border-color:var(--hit);color:var(--hit)}.pad button:active{background:var(--ink);color:var(--card)}
-.chip{border:1px solid var(--ink);border-radius:3px;padding:1px 8px;font-size:13px}.chip.o{border-color:var(--hit);color:var(--hit)}
-.warn{color:var(--hit);font-size:13px;margin-top:6px}
-.plate{border-top:1px solid var(--line);padding:9px 0}.plate:first-of-type{border-top:0}
-.combo{font-size:17px;font-weight:700;letter-spacing:.04em}
-.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--mut)}
-.meta b{color:var(--fg)}.sum{font-size:14px;margin-top:6px;padding-top:8px;border-top:2px solid var(--ink)}
-.sum b{color:var(--hit)}
-.pos{color:var(--ok)}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}td,th{padding:4px 6px;text-align:right;border-top:1px solid var(--line)}th{color:var(--mut);font-weight:400}tr.best td{font-weight:700;color:var(--ink)}.best-n{font-size:16px}.neg{color:var(--hit)}
-.sel{display:flex;gap:8px}.note{font-size:12px;color:var(--mut);margin-top:8px}
-details summary{cursor:pointer;color:var(--ink);font-size:14px}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.pad button{font:inherit;font-size:18px;padding:12px 0;border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:4px;touch-action:manipulation}
+.pad button.o{border-color:var(--hit);color:var(--hit)}.pad button:active{background:var(--ink);color:var(--card)}
+.stair{display:flex;flex-direction:row-reverse;align-items:flex-end;gap:4px;--sz:12px}
+.col{display:flex;flex-direction:column;align-items:center;gap:2px}
+.cell{width:var(--sz);height:var(--sz);border:1.5px solid var(--line);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:calc(var(--sz)*.6);line-height:1}
+.cell.on{border-color:transparent}.cell.oy{border-color:var(--hit);color:var(--hit);font-weight:700}
+.bd{font-size:11px;font-weight:700;min-height:15px;line-height:15px;white-space:nowrap}
+.big{--sz:22px;margin-top:10px;padding:6px 0}.big .bd{color:var(--mut);font-weight:400}
+.tip{font-size:12px;color:var(--mut);margin-top:4px}
+.pl{border-left:5px solid var(--c);padding:2px 0 2px 10px;margin:12px 0}
+.ph{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}.ph b{font-size:16px;color:var(--c)}.ph span{font-size:13px;color:var(--mut)}
+.plate{display:flex;gap:12px;align-items:flex-end;padding:8px 0;border-top:1px solid var(--line)}.plate:first-of-type{border-top:0}
+.mini{min-width:96px}.m{font-size:13px;color:var(--mut)}
+.total{border:2px solid var(--ink);border-radius:6px;padding:10px 12px;margin:8px 0}.tl{font-size:13px;color:var(--mut)}.tv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}.tv>div{display:flex;flex-direction:column}.tv .k{font-size:11px;color:var(--mut);line-height:1.3}.tv b{font-size:22px;line-height:1.25}
+.sum{font-size:14px;margin-top:6px;padding-top:8px;border-top:2px solid var(--ink)}
+.pos{color:var(--ok)}.neg{color:var(--hit)}.note{font-size:12px;color:var(--mut);margin-top:8px}
+.best-n{font-size:16px;margin:0 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}td,th{padding:4px 6px;text-align:right;border-top:1px solid var(--line)}th{color:var(--mut);font-weight:400}tr.best td{font-weight:700;color:var(--ink)}
+details{margin-top:10px}summary{cursor:pointer;color:var(--ink);font-size:14px}
 .o5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cell.ball{background:var(--hit);color:#fff;border-color:transparent;font-weight:700}.big .cell{cursor:pointer}
+.btn{font:inherit;padding:9px 12px;border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:4px}.btn.pri{background:var(--ink);color:var(--card)}
+.rowb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.act{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13px}.act label{margin:0;display:flex;gap:4px;align-items:center}.act input[type=number]{width:84px;padding:4px 6px}.act select{width:auto;padding:4px 6px}
+.params{border:1px dashed var(--line);border-radius:6px;padding:8px 10px;margin-top:10px}textarea{width:100%;font:12px monospace;background:var(--bg);color:var(--fg);border:1px solid var(--line)}
 :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 </style></head><body><main>
 <h1>すしがっぽり 舟盛ベット計算</h1>
-<p class="sub">盤面を円周の並び順で入力すると、最適な舟盛の数と賭け方を提案します。</p>
+<p class="sub">盤面をタップで入力すると、おすすめの賭け方を出します。</p>
 
 <section>
-<h2>盤面と条件</h2>
-<label for="board">盤面(円周の順。おやじは「お」)</label>
-<input id="board" value="4-お-4-3-3-1" inputmode="none" autocomplete="off">
+<h2>盤面</h2>
+<label for="board">右の列から順に入力(おやじは「お」)</label>
+<input id="board" value="4-3-お-3-2-2-1" inputmode="none" autocomplete="off">
 <div class="pad" id="pad"></div>
-<div class="board" id="legend"></div><div class="warn" id="warn"></div>
+<div class="stair big" id="stair"></div>
+<div class="tip" id="warn"></div>
+<div class="rowb"><span id="bst">ボール 0/5</span><button class="btn" id="bundo" type="button">1つ戻す</button><button class="btn" id="bclr" type="button">クリア</button><span class="tip">上の絵をタップして、ボールが入ったポケットを入った順に記録</span></div>
 <div class="row">
-<div><label for="bet">1皿のBET(枚)</label><input id="bet" type="number" value="10" min="1"></div>
-<div><label for="f">フリーチョイス確率(%)</label><input id="f" type="number" value="78" min="0" max="100"></div>
+<div><label for="pl">人数(1人3注文まで)</label><select id="pl"><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="6">6人</option><option value="7">7人</option><option value="8">8人</option></select></div>
+<div><label for="mode">モード</label><select id="mode"><option value="ev">期待収支を優先</option><option value="dopa">ドーパミン優先</option></select></div>
 </div>
-<div class="row">
-<div><label for="mn">最小皿数</label><input id="mn" type="number" value="1" min="1" max="15"></div>
-<div><label for="mx">最大皿数</label><input id="mx" type="number" value="10" min="1" max="15"></div>
+<div class="row" id="mer" style="display:none">
+<div><label for="me">あなたは</label><select id="me"></select></div>
+<div><label for="view">表示</label><select id="view"><option value="all">全員分</option><option value="me">自分の分だけ</option></select></div>
 </div>
-<div class="row">
-<div><label for="mode">モード</label><select id="mode"><option value="s">堅実(当たれば必ず増える)</option><option value="a">攻め(当たれば大きく増える)</option></select></div>
-<div><label for="k">攻めの目標(配当÷投入)</label><input id="k" type="number" value="2" min="1" step="0.1"></div>
-</div>
-<label for="q">隣に入りやすい補正: <span id="qv">0%</span>(0%=完全ランダム)</label>
+<div class="params"><b>テスト用パラメーター</b>
+<div class="row"><div><label for="tm">配当の下限(全体の投入の何倍以上)</label><input id="tm" type="number" value="1" step="0.05" min="0"></div>
+<div><label for="fs">舟盛りFC(%)</label><input id="fs" type="number" value="80" min="0" max="100"></div>
+<div><label for="ft">下駄FC(%)</label><input id="ft" type="number" value="20" min="0" max="100"></div></div>
+<label for="q">隣に入りやすい補正: <span id="qv">0%</span></label>
 <input id="q" type="range" min="0" max="60" value="0">
-<details style="margin-top:10px"><summary>配当モデル(1球あたりの倍率)</summary>
-<div class="o5" id="o5"></div>
-<p class="note">個数1〜5のネタの倍率。配当 = 5球分の倍率の積 ÷ 並び方の数(×BET/10)。12+3件の実測にあてはめた推定で、誤差は約6%以内です。</p></details>
+<details><summary>舟盛りの配当モデル(個数1〜5の1球あたり倍率)</summary><div class="o5" id="o5"></div></details></div>
 </section>
 
-<section><h2>おすすめの賭け方</h2><div id="res"></div></section>
+<section><h2>おすすめの注文</h2><div id="res"></div></section>
 
-<section><h2>フリーチョイス(3球目まで入った後)</h2>
-<div class="sel" id="b3"></div><div id="fcres" style="margin-top:8px"></div>
-<p class="note">フリーチョイス権がある前提で、残り2球は完全ランダムとして計算しています。</p></section>
-<p class="note">確率は盤面のポケット数に基づく見積りで、実機の抽選を保証するものではありません。配当は機械の表示を優先してください。</p>
+<section><h2>テスト記録</h2>
+<div class="rowb"><button class="btn pri" id="bsave" type="button">このラウンドを保存</button><span><b id="lcnt">0</b> ラウンド保存済み</span></div>
+<div class="rowb"><button class="btn" id="bdl" type="button">CSVをダウンロード</button><button class="btn" id="bcp" type="button">コピー</button><button class="btn" id="bdel" type="button">全部消す</button></div>
+<details><summary>CSVを表示(コピー用)</summary><textarea id="csvout" readonly rows="6"></textarea></details>
+<p class="note">使い方: ①おすすめの注文を頼む → ②各注文の「実際の配当」とFCの有無を入力 → ③ボールが入ったポケットを盤面の絵でタップ → 「このラウンドを保存」。終わったらCSVをダウンロードして送ってください。</p></section>
 </main>
 <script>
-const $=id=>document.getElementById(id),LB='ABCDEFGHIJKL',F=[1,1,2,6,24,120];
-const O={1:11.2,2:7.1,3:5.1,4:4.0,5:3.3};
-const odds=c=>O[c]||15/c*1.1,pc=x=>(x*100).toFixed(1)+'%';
-let G={},lastKey='';
+const $=id=>document.getElementById(id),F=[1,1,2,6,24,120],PC=[1,2,3,4,5,6,7,8].map(i=>`var(--p${i})`);
+const O={1:10.93,2:6.87,3:5.13,4:4.04,5:3.28},BET={s:10,g:5,d:3},TN={s:'舟盛り',g:'下駄',d:'皿'},CO={g:[-0.271,-0.650],d:[-0.910,-1.228]};
+const odds=c=>O[c]||15/c*1.1,pc=x=>(x*100).toFixed(1)+'%',sum=(D,h)=>h.reduce((a,j)=>a+D[j].p,0);
 $('o5').innerHTML=[1,2,3,4,5].map(c=>`<div><label>${c}個</label><input type="number" step="0.1" id="o${c}" value="${O[c]}"></div>`).join('');
 function parse(){
  const seq=[],pk=[],cnt=[];let oya=0;
@@ -85,81 +98,143 @@ function parse(){
  }
  const n=cnt.length;return{seq,cnt,n,oya,len:pk.length,pk:pk.map(x=>x<0?n:x)};
 }
-function payout(S,cnt,bet){let p=1,co=120;S.forEach((k,i)=>{if(k){p*=Math.pow(odds(cnt[i]),k);co/=F[k]}});return p/co*bet/10}
-function gen(n){const out=[],cur=new Array(n).fill(0);(function r(i,left){if(i==n-1){cur[i]=left;out.push(cur.slice());return}for(let k=0;k<=left;k++){cur[i]=k;r(i+1,left-k)}})(0,5);return out}
-function dist(pk,n,q){
- const L=pk.length;let st=new Map();
+function stair(b,S,col,balls){
+ return b.seq.map(s=>{
+  if(s.o){const n=!S&&balls&&balls.o;return S?'':`<div class="col"><div class="bd"></div><div class="cell oy${n?' ball':''}" data-k="o">${n||'お'}</div></div>`}
+  const k=S?S[s.i]:0;
+  return`<div class="col">`+(S?'':`<div class="bd">${s.c}</div>`)
+   +Array.from({length:s.c},(_,j)=>{const n=!S&&balls&&balls[s.i+'-'+j],on=j>=s.c-k;return`<div class="cell${on?' on':''}${n?' ball':''}" ${S?'':`data-k="${s.i}-${j}"`} ${on?`style="background:${col}"`:''}>${n||''}</div>`}).join('')+`</div>`}).join('');
+}
+function pays(S,cnt){let p=1,co=120,n1=0;S.forEach((k,i)=>{if(k){p*=Math.pow(odds(cnt[i]),k);co/=F[k];if(cnt[i]==1)n1+=k}});return p/co*Math.exp(-0.148*Math.max(n1-1,0))}
+function genP(sz){const out=[];[[1,'d'],[2,'d'],[3,'g'],[5,'s']].forEach(([tot,t])=>{const cur=[];(function r(i,left){if(i==sz.length){if(!left)out.push({t,S:cur.slice()});return}for(let k=0;k<=Math.min(left,sz[i]);k++){cur[i]=k;r(i+1,left-k)}})(0,tot)});return out}
+function psup(S,G){let x=0;G.A.forEach((a,ai)=>{for(const j of G.by[ai]){const w=G.O[j].v2;let ok=true;for(let i=0;i<S.length;i++)if(a.v[i]+w[i]<S[i]){ok=false;break}if(ok)x+=G.O[j].p}});return x}
+function dist5(pk,n,q){
+ const L=pk.length,T=n+1,nx=(j)=>(j+1)%L,pr=(i,j)=>(1-q)/L+(j==nx(i)?q:0);let st=new Map();
  const add=(m,i,v,p)=>{const k=i+'|'+v.join();const e=m.get(k);if(e)e[2]+=p;else m.set(k,[i,v,p])};
- for(let i=0;i<L;i++){const v=new Array(n+1).fill(0);v[pk[i]]=1;add(st,i,v,1/L)}
- for(let s=1;s<5;s++){const ns=new Map();
-  for(const [i,v,p] of st.values())for(let j=0;j<L;j++){
-   const pr=(1-q)/L+(j==(i+1)%L?q:0);if(!pr)continue;
-   const v2=v.slice();v2[pk[j]]++;add(ns,j,v2,p*pr)}
+ for(let i=0;i<L;i++){const v=new Array(T).fill(0);v[pk[i]]=1;add(st,i,v,1/L)}
+ for(let s=1;s<3;s++){const ns=new Map();
+  for(const [i,v,p] of st.values())for(let j=0;j<L;j++){const x=pr(i,j);if(!x)continue;const v2=v.slice();v2[pk[j]]++;add(ns,j,v2,p*x)}
   st=ns}
- const agg=new Map();
- for(const [i,v,p] of st.values()){const k=v.join();const e=agg.get(k);if(e)e.p+=p;else agg.set(k,{v,p})}
- return[...agg.values()];
+ const A=[],ai=new Map(),O=[],oi=new Map(),by=[];
+ for(const [i,v,p] of st.values()){
+  const vk=v.join();let a=ai.get(vk);if(a===undefined){a=A.length;ai.set(vk,a);A.push({v,p:0});by.push([])}A[a].p+=p;
+  for(let j=0;j<L;j++){const p1=pr(i,j);if(!p1)continue;
+   for(let k=0;k<L;k++){const p2=pr(j,k);if(!p2)continue;
+    const ta=pk[j],tb=pk[k],key=a*T*T+Math.min(ta,tb)*T+Math.max(ta,tb);
+    let o=oi.get(key);if(o===undefined){o=O.length;oi.set(key,o);const w=new Array(T).fill(0);w[ta]++;w[tb]++;O.push({v2:w,p:0});by[a].push(o)}
+    O[o].p+=p*p1*p2}}}
+ return{A,O,by};
 }
-function hits(D,S,fc){const h=[];D.forEach((d,j)=>{let m=0;for(let i=0;i<S.length;i++)m+=Math.max(0,S[i]-d.v[i]);if(m<=(fc?1:0))h.push(j)});return h}
-const name=S=>S.map((k,i)=>k?LB[i]+(k>1?'×'+k:''):'').filter(Boolean).join(' ');
-function build(D,cand,N,bet,k){
- const pool=cand.filter(c=>c.pay>bet*N*k),miss=new Float64Array(D.length).fill(1),sel=[];
- for(let k=0;k<N;k++){let bi=-1,bg=-1;
-  pool.forEach((c,i)=>{if(c.used)return;let g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h;if(g>bg){bg=g;bi=i}});
-  if(bi<0)break;const c=pool[bi];c.used=1;c.h.forEach(([j,h])=>miss[j]*=1-h);sel.push(c)}
- pool.forEach(c=>c.used=0);
- let any=0,ev=0;D.forEach((d,j)=>any+=d.p*(1-miss[j]));
- sel.forEach(c=>c.h.forEach(([j,h])=>ev+=D[j].p*h*c.pay));
- const cost=bet*sel.length,avg=any>0?ev/any-cost:0;
- return{N,sel,any,avg,ev:ev-cost,cost,min:sel.length?Math.min(...sel.map(c=>c.pay))-cost:0};
+const cov=(w,r)=>{for(let i=0;i<r.length;i++)if(r[i]>w[i])return false;return true};
+function plateHits(S,G,f){
+ const h=[];
+ G.A.forEach((a,ai)=>{
+  const m=S.map((k,i)=>Math.max(0,k-a.v[i]));m.push(0);
+  const outs=G.by[ai];let best=null,bp=-1;
+  for(let t=0;t<S.length;t++)if(m[t]>0){const r=m.slice();r[t]--;let x=0;for(const j of outs)if(cov(G.O[j].v2,r))x+=G.O[j].p;if(x>bp){bp=x;best=r}}
+  for(const j of outs){const w=G.O[j].v2;if(cov(w,m))h.push([j,1]);else if(best&&f>0&&cov(w,best))h.push([j,f])}
+ });
+ return h;
 }
+function dist4(pk,n,q){const L=pk.length,T=n+1,pr=(i,j)=>(1-q)/L+(j==(i+1)%L?q:0);let st=new Map();
+ const add=(m,i,v,p)=>{const k=i+'|'+v.join();const e=m.get(k);if(e)e[2]+=p;else m.set(k,[i,v,p])};
+ for(let i=0;i<L;i++){const v=new Array(T).fill(0);v[pk[i]]=1;add(st,i,v,1/L)}
+ for(let s=1;s<4;s++){const ns=new Map();for(const[i,v,p]of st.values())for(let j=0;j<L;j++){const x=pr(i,j);if(!x)continue;const w=v.slice();w[pk[j]]++;add(ns,j,w,p*x)}st=ns}
+ const agg=new Map();for(const[i,v,p]of st.values()){const k=v.join();const e=agg.get(k);if(e)e.p+=p;else agg.set(k,{v,p})}return[...agg.values()]}
+function unionP(D,pls){const miss=new Float64Array(D.length).fill(1);pls.forEach(c=>c.h.forEach(([j,h])=>miss[j]*=1-h));return D.reduce((a,d,j)=>a+d.p*(1-miss[j]),0)}
+let ROUND={board:'',balls:[],ord:{}},LAST=null,LOG=[];
+try{LOG=JSON.parse(localStorage.getItem('gp_log')||'[]')}catch(e){}
+function renderStair(){const b=ROUND.b;if(!b)return;const m={};ROUND.balls.forEach((k,i)=>m[k]=i+1);$('stair').innerHTML=stair(b,null,'',m);$('bst').textContent=`ボール ${ROUND.balls.length}/5`}
 function update(){
  for(let c=1;c<=5;c++)O[c]=+$('o'+c).value||O[c];
- const b=parse(),q=+$('q').value/100,bet=+$('bet').value||10,f=Math.min(1,Math.max(0,(+$('f').value||0)/100)),mode=$('mode').value,k=mode=='a'?Math.max(1,+$('k').value||2):1;
+ const b=parse(),q=+$('q').value/100,P=+$('pl').value,mode=$('mode').value,TOL=Math.max(0,+$('tm').value||0);
+ const cl=x=>Math.min(1,Math.max(0,(+x||0)/100)),fs=cl($('fs').value),ft=cl($('ft').value);
  $('qv').textContent=$('q').value+'%';
- $('legend').innerHTML=b.seq.map(s=>s.o?'<span class="chip o">お</span>':`<span class="chip">${LB[s.i]}(${s.c})</span>`).join('');
- $('warn').textContent=`合計 ${b.len}/16マス`+(b.len>16?'(多すぎます)':'');$('warn').style.color=b.len==16?'var(--ok)':b.len>16?'var(--hit)':'var(--mut)';
- if(!b.n||b.n>LB.length){$('res').textContent='盤面を入力してください。例: 4-お-4-3-3-1';return}
- const D=dist(b.pk,b.n,q);G={b,D,bet,sel:[]};
- const cand=gen(b.n).map(S=>({S,pay:payout(S,b.cnt,bet)})).filter(c=>c.pay>bet);
- cand.forEach(c=>{const h0=new Set(hits(D,c.S,0));c.p0=0;c.p1=0;c.pe=0;
-  c.h=hits(D,c.S,1).map(j=>{const z=h0.has(j),h=z?1:f;c.p1+=D[j].p;c.pe+=D[j].p*h;if(z)c.p0+=D[j].p;return[j,h]})});
- const R=[];const cl=(x,d)=>Math.min(15,Math.max(1,Math.round(+x)||d));let mn=cl($('mn').value,1),mx=cl($('mx').value,10);if(mn>mx)[mn,mx]=[mx,mn];for(let N=mn;N<=mx;N++){const r=build(D,cand,N,bet,k);if(r.sel.length==N)R.push(r)}
- if(!R.length){$('res').innerHTML=`<p>条件を満たす組み合わせがありません。攻めの目標を下げてください。</p>`;fcRender();return}
- const best=R.reduce((a,r)=>r.ev>a.ev?r:a);
- G.sel=best.sel;
- const fm=x=>`<span class="${x>=0?'pos':'neg'}">${x>=0?'+':''}${x.toFixed(0)}枚</span>`;
- $('res').innerHTML=`<p class="best-n">おすすめは <b>${best.N}皿</b>(投入 ${best.cost}枚)</p>`
-  +best.sel.map(c=>`<div class="plate"><div class="combo">${name(c.S)}</div><div class="meta"><span>配当 <b>${c.pay.toFixed(0)}枚</b></span><span>当たり時 ${fm(c.pay-best.cost)}(${(c.pay/best.cost).toFixed(1)}倍)</span><span>確率 FCなし ${pc(c.p0)} / あり ${pc(c.p1)}</span></div></div>`).join('')
-  +`<div class="sum">どれか当たる確率 <b>${pc(best.any)}</b> ／ 当たり時の平均 ${fm(best.avg)} ／ 期待収支 ${fm(best.ev)}</div>`
-  +`<table><tr><th>皿数</th><th>当たる確率</th><th>期待収支</th><th>当たり時の平均</th></tr>`
-  +R.map(r=>`<tr class="${r==best?'best':''}"><td>${r.N}</td><td>${pc(r.any)}</td><td>${fm(r.ev)}</td><td>${fm(r.avg)}</td></tr>`).join('')+`</table>`
-  +`<p class="note">フリーチョイスは皿ごとに${(f*100).toFixed(0)}%でもらえる前提です。</p>`;
- const key=b.seq.map(s=>s.o?'o':s.c).join('-');
- if(key!=lastKey){lastKey=key;const op=[...Array(b.n).keys()].map(i=>`<option value="${i}">${LB[i]}(${b.cnt[i]})</option>`).join('')+(b.oya?`<option value="${b.n}">お</option>`:'');
-  $('b3').innerHTML=[1,2,3].map(k=>`<div style="flex:1"><label>${k}球目</label><select class="s3">${op}</select></div>`).join('');
-  document.querySelectorAll('.s3').forEach(s=>s.onchange=fcRender)}
- fcRender();
+ const view=$('view').value,me=Math.min(P,+$('me').value||1);$('mer').style.display=P>1?'':'none';save();
+ const bk=b.seq.map(s=>s.o?'o':s.c).join('-');if(ROUND.board!==bk)ROUND={board:bk,balls:[],ord:{}};ROUND.b=b;renderStair();
+ $('warn').innerHTML=`合計 ${b.len}/16マス(右端が1つ目)`;$('warn').style.color=b.len==16?'var(--ok)':b.len>16?'var(--hit)':'var(--mut)';
+ LAST=null;
+ if(!b.n||b.n>8){$('res').textContent='盤面を入力してください。例: 4-3-お-3-2-2-1';return}
+ const GR=dist5(b.pk,b.n,q),D=GR.O,G0=q?dist5(b.pk,b.n,0):GR;
+ const cand=genP(b.cnt).map(c=>{
+  if(c.t=='s')c.pay=pays(c.S,b.cnt)*BET.s/10;
+  else{const pp=psup(c.S,G0);c.pay=Math.exp(CO[c.t][0]+CO[c.t][1]*Math.log(pp))*BET[c.t]}
+  c.h=plateHits(c.S,GR,c.t=='s'?fs:c.t=='g'?ft:0);c.pe=c.h.reduce((a,[j,h])=>a+D[j].p*h,0);
+  c.net=c.pe*c.pay-BET[c.t];return c}).filter(c=>c.pe>0);
+ cand.sort((x,y)=>y.net-x.net);
+ const dopa=mode=='dopa';
+ const pickSet=()=>{let bs=null,bq=-1e9,bB=0,bpool=null;
+  for(let B=5;B<=30*P;B+=5){
+   const pool=cand.filter(c=>c.pay>=TOL*B),miss=new Float64Array(D.length).fill(1),set=[],used=new Set();let cost=0;
+   while(set.length<3*P){let best=null,bg=-1e18;
+    for(const c of pool){if(cost+BET[c.t]>B||used.has(c))continue;let g;if(dopa){g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h}else g=c.net;if(g>bg){bg=g;best=c}}
+    if(!best)break;used.add(best);set.push(best);cost+=BET[best.t];best.h.forEach(([j,h])=>miss[j]*=1-h)}
+   if(!set.length)continue;
+   const sc=dopa?D.reduce((a,d,j)=>a+d.p*(1-miss[j]),0)  :set.reduce((a,c)=>a+c.net,0);
+   if(!bs||set.length>bs.length||(set.length==bs.length&&sc>bq+1e-9)){bq=sc;bs=set;bB=B;bpool=pool}}
+  if(!bs||!dopa)return bs;
+  for(let pass=0;pass<3;pass++){let ch=false;
+   for(let i=0;i<bs.length;i++){const miss=new Float64Array(D.length).fill(1);bs.forEach((c,k)=>{if(k!=i)c.h.forEach(([j,h])=>miss[j]*=1-h)});
+    const co=bs.reduce((a,c,k)=>k==i?a:a+BET[c.t],0),gn=c=>{let g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h;return g};
+    let best=bs[i],bg=gn(best);
+    for(const c of bpool){if(bs.includes(c)||co+BET[c.t]>bB)continue;const g=gn(c);if(g>bg+1e-12){bg=g;best=c}}
+    if(best!==bs[i]){bs[i]=best;ch=true}}
+   if(!ch)break}
+  return bs};
+ const D4=dist4(b.pk,b.n,q);
+ const alive4=set=>{let x=0;D4.forEach(a=>{let pr=1;for(const c of set){const f=c.t=='s'?fs:c.t=='g'?ft:0;let m=0;for(let i=0;i<c.S.length;i++)m+=Math.max(0,c.S[i]-a.v[i]);pr*=1-(m<=1?1:m==2?f:0)}x+=a.p*(1-pr)});return x};
+ const sel=pickSet(),gs=Array.from({length:P},()=>[]);
+ if(sel)sel.forEach((c,i)=>{const r=Math.floor(i/P),p=i%P;gs[r%2?P-1-p:p].push(c)});
+ const fm=x=>`<span class="${x>=0?'pos':'neg'}">${x>=0?'+':''}${x.toFixed(1)}枚</span>`;
+ const row=(c,col,inp)=>{const key=c.t+'|'+c.S.join(','),st=ROUND.ord[key]||{};
+  return`<div class="plate"><div class="stair mini">${stair(b,c.S,col)}</div><div><div><b>${TN[c.t]}</b>　配当(予測) <b>${c.pay.toFixed(0)}枚</b></div><div class="m">期待収支 ${fm(c.net)}/回 ／ 当たる確率 ${pc(c.pe)}</div>`
+  +(inp?`<div class="act"><label>実際の配当 <input type="number" class="ap" data-key="${key}" value="${st.pay??''}"></label>`+(c.t!='d'?`<label>FC <select class="afc" data-key="${key}"><option value="">未入力</option><option value="y"${st.fc=='y'?' selected':''}>もらえた</option><option value="n"${st.fc=='n'?' selected':''}>なし</option></select></label>`:'')+`</div>`:'')+`</div></div>`};
+ $('res').innerHTML=(sel?'':'<p class="tip neg">条件を満たす注文がありません。配当の下限を下げてください。</p>')
+  +(()=>{const all=gs.flat();if(!all.length)return'';const cost=all.reduce((a,c)=>a+BET[c.t],0),ev=all.reduce((a,c)=>a+c.net,0);return`<div class="total"><div class="tl">${P>1?`全員合計(${all.length}注文)`:`合計(${all.length}注文)`}・投入 ${cost}枚</div><div class="tv"><div><span class="k">どれか当たる確率</span><b>${pc(unionP(D,all))}</b></div><div><span class="k">期待収支</span><b>${fm(ev)}</b></div><div><span class="k">4球目までドパドパできる確率</span><b>${pc(alive4(all))}</b></div></div><div class="tl">当たれば、全体の投入の${Math.round(TOL*100)}%以上の配当が返る注文だけを選んでいます。</div></div>`})()
+  +gs.map((g,k)=>{if(!g.length||(view=='me'&&P>1&&k!=me-1))return'';
+   const cost=g.reduce((a,c)=>a+BET[c.t],0),ev=g.reduce((a,c)=>a+c.net,0);
+   return`<div class="pl" style="--c:${PC[k]}"><div class="ph"><b>${P==1?'おすすめ':view=='me'?`あなた(${k+1}人目)`:`${k+1}人目`}</b><span>投入${cost}枚・どれか当たる確率 ${pc(unionP(D,g))}・期待収支 ${fm(ev)}</span></div>`+g.map(c=>row(c,PC[k],true)).join('')+'</div>'}).join('')
+  +`<details><summary>期待収支の高い注文ランキング</summary>`+cand.slice(0,8).map(c=>row(c,'var(--ink)',false)).join('')+`</details>`
+  +`<p class="note">期待収支 = 1回あたりの戻りの平均 − BET(枚)。同じ種類の注文は重ねません。配当と確率は推定なので、実機の表示配当を右の欄に入力して記録してください。</p>`;
+ const pos2=b.seq.map(s=>s.o?-1:s.i);
+ LAST={bd:b.seq.map(s=>s.o?'お':s.c),pos2,P,mode,TOL,fs,ft,q,orders:gs.flatMap((g,k)=>g.map(c=>({k:k+1,c})))};
 }
-const sum=(D,h)=>h.reduce((a,j)=>a+D[j].p,0);
-function p2(r,pt,n){let s=0;for(let a=0;a<=n;a++)for(let b=0;b<=n;b++){const c=new Array(n+1).fill(0);c[a]++;c[b]++;let ok=1;for(let i=0;i<=n;i++)if(r[i]>c[i]){ok=0;break}if(ok)s+=pt[a]*pt[b]}return s}
-function fcRender(){
- const{b,sel}=G;if(!b||!sel||!sel.length){$('fcres').innerHTML='';return}
- const n=b.n,pt=b.cnt.map(c=>c/b.len).concat([b.oya/b.len]);
- const v=new Array(n+1).fill(0);document.querySelectorAll('.s3').forEach(s=>{if(s.value!=='')v[+s.value]++});
- $('fcres').innerHTML=sel.map(c=>{
-  const m=c.S.map((k,i)=>Math.max(0,k-v[i]));m.push(0);const need=m.reduce((a,x)=>a+x,0);
-  let t;
-  if(!need)t='<span class="pos">3球で5個そろい済み</span>';
-  else{const base=need<=2?p2(m,pt,n):0;let best=-1,bp=-1;
-   m.forEach((x,i)=>{if(x>0){const r=m.slice();r[i]--;const p=p2(r,pt,n);if(p>bp){bp=p;best=i}}});
-   t=`チョイス <b>${LB[best]}</b> → 残り2球で当たる確率 <b>${pc(bp)}</b>(FCなし ${pc(base)})`+`<br><span class="meta">あと${need}個: ${name(m.slice(0,n))}</span>`}
-  return`<div class="plate"><div class="combo">${name(c.S)}</div><div style="font-size:14px">${t}</div></div>`}).join('');
+const bpos=(k)=>{if(k=='o')return'お';const[i,j]=k.split('-').map(Number);const p=ROUND.b.seq.findIndex(s=>!s.o&&s.i==i);return`${p+1}-${j+1}`};
+function toCSV(){
+ const e=v=>{v=String(v??'');return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const h=['ラウンド','日時','モード','人数','配当下限倍率','FC舟盛り(%)','FC下駄(%)','隣補正(%)','注文No','持ち主','種類','BET','予測配当','実際の配当','FC','予測確率(%)','予測期待収支'];
+ for(let i=1;i<=9;i++)h.push('盤面'+i,'選ぶ'+i);for(let i=1;i<=5;i++)h.push('ボール'+i);
+ const rows=[h];
+ LOG.forEach((r,ri)=>{r.ord.forEach((o,oi)=>{
+  const row=[ri+1,r.t,r.mode=='dopa'?'ドーパミン優先':'期待収支優先',r.P,r.TOL,Math.round(r.fs*100),Math.round(r.ft*100),Math.round(r.q*100),oi+1,o.k,TN[o.t],BET[o.t],o.pay.toFixed(1),o.act,o.fc=='y'?'もらえた':o.fc=='n'?'なし':'',(o.pe*100).toFixed(2),o.net.toFixed(2)];
+  for(let i=0;i<9;i++){const x=r.bd[i];row.push(x===undefined?'':x,x===undefined||x==='お'?'':o.S[r.pos2[i]])}
+  for(let i=0;i<5;i++)row.push(r.balls[i]||'');rows.push(row)})});
+ return rows.map(r=>r.map(e).join(',')).join('\n');
 }
+const KEYS=['pl','me','view','mode','fs','ft','q','tm'];
+function save(){try{KEYS.forEach(k=>localStorage.setItem('gp_'+k,$(k).value))}catch(e){}}
+function load(ks){try{ks.forEach(k=>{const v=localStorage.getItem('gp_'+k);if(v!==null)$(k).value=v})}catch(e){}}
+function syncMe(){const P=+$('pl').value,cur=+$('me').value;$('me').innerHTML=Array.from({length:P},(_,i)=>`<option value="${i+1}">${i+1}人目</option>`).join('');if(cur>=1&&cur<=P)$('me').value=cur}
+load(['pl']);syncMe();load(['me','view','mode','fs','ft','q','tm']);
 $('pad').innerHTML=['1','2','3','4','5','お','←','クリア'].map(t=>`<button type="button" class="${t=='お'?'o':''}" data-t="${t}">${t}</button>`).join('');
 $('pad').onclick=e=>{const t=e.target.dataset.t;if(!t)return;const a=$('board').value.split(/[\s,、\-ー−–—]+/).filter(Boolean);if(t=='←')a.pop();else if(t=='クリア')a.length=0;else a.push(t);$('board').value=a.join('-');update()};
-['board','bet','f','mn','mx','mode','k','q'].forEach(i=>$(i).addEventListener('input',update));
+$('pl').addEventListener('input',()=>{syncMe();update()});
+['board','fs','ft','q','me','view','mode','tm'].forEach(i=>$(i).addEventListener('input',update));
 document.querySelectorAll('#o5 input').forEach(i=>i.addEventListener('input',update));
+$('stair').addEventListener('click',e=>{const c=e.target.closest('.cell');if(!c||!c.dataset.k)return;const k=c.dataset.k;if(ROUND.balls.includes(k)||ROUND.balls.length>=5)return;ROUND.balls.push(k);renderStair()});
+$('bundo').onclick=()=>{ROUND.balls.pop();renderStair()};$('bclr').onclick=()=>{ROUND.balls=[];renderStair()};
+$('res').addEventListener('input',e=>{const t=e.target;if(t.classList.contains('ap')){(ROUND.ord[t.dataset.key]=ROUND.ord[t.dataset.key]||{}).pay=t.value}});
+$('res').addEventListener('change',e=>{const t=e.target;if(t.classList.contains('afc')){(ROUND.ord[t.dataset.key]=ROUND.ord[t.dataset.key]||{}).fc=t.value}});
+function saveLog(){try{localStorage.setItem('gp_log',JSON.stringify(LOG))}catch(e){}$('lcnt').textContent=LOG.length;$('csvout').value=LOG.length?toCSV():''}
+$('bsave').onclick=()=>{if(!LAST||!LAST.orders.length){alert('おすすめの注文がありません');return}
+ const ord=LAST.orders.map(({k,c})=>{const st=ROUND.ord[c.t+'|'+c.S.join(',')]||{};return{k,t:c.t,S:c.S.slice(),pay:c.pay,pe:c.pe,net:c.net,act:st.pay===undefined?'':st.pay,fc:st.fc||''}});
+ LOG.push({t:new Date().toISOString(),bd:LAST.bd,pos2:LAST.pos2,P:LAST.P,mode:LAST.mode,TOL:LAST.TOL,fs:LAST.fs,ft:LAST.ft,q:LAST.q,ord,balls:ROUND.balls.map(bpos)});
+ saveLog();ROUND={board:ROUND.board,b:ROUND.b,balls:[],ord:{}};update()};
+$('bdl').onclick=()=>{if(!LOG.length){alert('保存されたラウンドがありません');return}
+ const blob=new Blob(['\ufeff'+toCSV()],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gappori-testplay-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove()};
+$('bcp').onclick=async()=>{if(!LOG.length){alert('保存されたラウンドがありません');return}const t=toCSV();try{await navigator.clipboard.writeText(t);alert('コピーしました')}catch(e){$('csvout').value=t;$('csvout').select();alert('下のCSVを手動でコピーしてください')}};
+$('bdel').onclick=()=>{if(confirm('保存したラウンドを全部消しますか?')){LOG=[];saveLog()}};
+saveLog();
 update();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script></body></html>
