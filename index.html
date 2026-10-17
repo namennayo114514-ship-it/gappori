@@ -95,6 +95,7 @@ main>.note{background:rgba(255,255,255,.78);color:#3a4350;padding:8px 10px;borde
 <div class="hero"><div class="t1">すしがっぽり</div><div class="bub">ドパドパしたいやつ集合！</div><i class="sp oyh"></i><div class="perch"><i class="sp c0" style="--w:76px;transform:rotate(-4deg)"></i><i class="sp c1" style="--w:72px;transform:rotate(3deg);margin-left:-8px"></i><i class="sp c6" style="--w:66px;transform:rotate(-3deg);margin-left:-8px"></i></div></div>
 <section>
 <h2>盤面</h2>
+<div class="row"><div><label for="mc">機種</label><select id="mc"><option value="n">ノーマル</option><option value="k">極</option></select></div></div>
 <label for="board">右の列から順に入力</label>
 <input id="board" value="4-3-お-3-2-2-1" inputmode="none" autocomplete="off">
 <div class="pad" id="pad"></div>
@@ -114,7 +115,7 @@ main>.note{background:rgba(255,255,255,.78);color:#3a4350;padding:8px 10px;borde
 <div class="row"><div><label for="tm">配当の下限(全体の投入の何倍以上)</label><input id="tm" type="number" value="1" step="0.05" min="0"></div>
 <div><label for="fs">舟盛りFC(%)</label><input id="fs" type="number" value="80" min="0" max="100"></div>
 <div><label for="ft">下駄FC(%)</label><input id="ft" type="number" value="20" min="0" max="100"></div></div>
-<div class="row"><div><label for="bm">ボールの入り方</label><select id="bm"><option value="rot">回転でずれる(埋まっていたら次のマスへ)</option><option value="ind">完全ランダム</option></select></div><div><label for="rd">回転の向き</label><select id="rd"><option value="f">入力順(左回転)</option><option value="r">逆向き</option></select></div></div>
+<div class="row"><div><label for="bm">ボールの入り方</label><select id="bm"><option value="rot">回転でずれる(埋まっていたら次のマスへ)</option><option value="uni">隣の入りやすさなし(空いているマスに均等)</option></select></div></div>
 <details><summary>舟盛りの配当モデル(個数1〜5の1球あたり倍率)</summary><div class="o5" id="o5"></div></details></div>
 </section>
 
@@ -130,6 +131,7 @@ main>.note{background:rgba(255,255,255,.78);color:#3a4350;padding:8px 10px;borde
 <script>
 const $=id=>document.getElementById(id),F=[1,1,2,6,24,120],PC=[1,2,3,4,5,6,7,8].map(i=>`var(--p${i})`);
 const O={1:10.93,2:6.87,3:5.13,4:4.04,5:3.28},BET={s:10,g:5,d:3},TN={s:'舟盛り',g:'下駄',d:'皿'},CO={g:[-0.271,-0.650],d:[-0.910,-1.228]};
+const MC={n:{L:16,b0:10,bet:{s:10,g:5,d:3},odds:{1:10.93,2:6.87,3:5.13,4:4.04,5:3.28},n1:-0.148,co:{g:[-0.271,-0.650],d:[-0.910,-1.228]}},k:{L:18,b0:20,bet:{s:20,g:15,d:10},odds:{1:12.93,2:8.76,3:6.44,4:4.98,5:4.10},n1:0,co:{g:[-0.784,-0.819],d:[-0.703,-1.152]}}};let MCUR=MC.n,mcKey='';
 const odds=c=>O[c]||15/c*1.1,pc=x=>(x*100).toFixed(1)+'%',sum=(D,h)=>h.reduce((a,j)=>a+D[j].p,0);
 $('o5').innerHTML=[1,2,3,4,5].map(c=>`<div><label>${c}個</label><input type="number" step="0.1" id="o${c}" value="${O[c]}"></div>`).join('');
 function parse(){
@@ -147,7 +149,7 @@ function stair(b,S,col,balls){
   return`<div class="col">`+(S?'':`<div class="bd">${s.c}</div>`)
    +Array.from({length:s.c},(_,j)=>{const n=!S&&balls&&balls[s.i+'-'+j],on=j>=s.c-k;return`<div class="cell${on?' on':''}${n?' ball':''}" ${S?'':`data-k="${s.i}-${j}"`} ${on?`style="background:${col}"`:''}>${n||''}</div>`}).join('')+`</div>`}).join('');
 }
-function pays(S,cnt){let p=1,co=120,n1=0;S.forEach((k,i)=>{if(k){p*=Math.pow(odds(cnt[i]),k);co/=F[k];if(cnt[i]==1)n1+=k}});return p/co*Math.exp(-0.148*Math.max(n1-1,0))}
+function pays(S,cnt){let p=1,co=120,n1=0;S.forEach((k,i)=>{if(k){p*=Math.pow(odds(cnt[i]),k);co/=F[k];if(cnt[i]==1)n1+=k}});return p/co*Math.exp(MCUR.n1*Math.max(n1-1,0))}
 function genP(sz){const out=[];[[1,'d'],[2,'d'],[3,'g'],[5,'s']].forEach(([tot,t])=>{const cur=[];(function r(i,left){if(i==sz.length){if(!left)out.push({t,S:cur.slice()});return}for(let k=0;k<=Math.min(left,sz[i]);k++){cur[i]=k;r(i+1,left-k)}})(0,tot)});return out}
 function psup(S,G){let x=0;G.A.forEach((a,ai)=>{for(const j of G.by[ai]){const w=G.O[j].v2;let ok=true;for(let i=0;i<S.length;i++)if(a.v[i]+w[i]<S[i]){ok=false;break}if(ok)x+=G.O[j].p}});return x}
 function dist5(pk,n,q){
@@ -184,37 +186,38 @@ function dist4(pk,n,q){const L=pk.length,T=n+1,pr=(i,j)=>(1-q)/L+(j==(i+1)%L?q:0
  for(let s=1;s<4;s++){const ns=new Map();for(const[i,v,p]of st.values())for(let j=0;j<L;j++){const x=pr(i,j);if(!x)continue;const w=v.slice();w[pk[j]]++;add(ns,j,w,p*x)}st=ns}
  const agg=new Map();for(const[i,v,p]of st.values()){const k=v.join();const e=agg.get(k);if(e)e.p+=p;else agg.set(k,{v,p})}return[...agg.values()]}
 function unionP(D,pls){const miss=new Float64Array(D.length).fill(1);pls.forEach(c=>c.h.forEach(([j,h])=>miss[j]*=1-h));return D.reduce((a,d,j)=>a+d.p*(1-miss[j]),0)}
-const rotW=(m,j,L,dir)=>{let r=0,k=((j-dir)%L+L)%L;while((m>>k&1)&&r<L){r++;k=((k-dir)%L+L)%L}return(r+1)/L};
-function rotDist(L,dir,steps){let st=new Map([[0,1]]);for(let s=0;s<steps;s++){const ns=new Map();for(const[m,p]of st)for(let j=0;j<L;j++){if(m>>j&1)continue;const nm=m|(1<<j);ns.set(nm,(ns.get(nm)||0)+p*rotW(m,j,L,dir))}st=ns}return st}
-function dist5rot(pk,n,dir){const L=pk.length,T=n+1,st3=rotDist(L,dir,3),A=[],ai=new Map(),O=[],oi=new Map(),by=[];
+const rotW=(m,j,L,dir,uni,c)=>{if(uni)return 1/(L-c);let r=0,k=((j-dir)%L+L)%L;while((m>>k&1)&&r<L){r++;k=((k-dir)%L+L)%L}return(r+1)/L};
+function rotDist(L,dir,steps,uni){let st=new Map([[0,1]]);for(let s=0;s<steps;s++){const ns=new Map();for(const[m,p]of st)for(let j=0;j<L;j++){if(m>>j&1)continue;const nm=m|(1<<j);ns.set(nm,(ns.get(nm)||0)+p*rotW(m,j,L,dir,uni,s))}st=ns}return st}
+function dist5rot(pk,n,dir,uni){const L=pk.length,T=n+1,st3=rotDist(L,dir,3,uni),A=[],ai=new Map(),O=[],oi=new Map(),by=[];
  for(const[m,p]of st3){const v=new Array(T).fill(0);for(let j=0;j<L;j++)if(m>>j&1)v[pk[j]]++;const vk=v.join();let a=ai.get(vk);if(a===undefined){a=A.length;ai.set(vk,a);A.push({v,p:0});by.push([])}A[a].p+=p;
-  for(let j=0;j<L;j++){if(m>>j&1)continue;const pj=rotW(m,j,L,dir),m2=m|(1<<j);
-   for(let k=0;k<L;k++){if(m2>>k&1)continue;const p2=rotW(m2,k,L,dir),ta=pk[j],tb=pk[k],key=a*T*T+Math.min(ta,tb)*T+Math.max(ta,tb);
+  for(let j=0;j<L;j++){if(m>>j&1)continue;const pj=rotW(m,j,L,dir,uni,3),m2=m|(1<<j);
+   for(let k=0;k<L;k++){if(m2>>k&1)continue;const p2=rotW(m2,k,L,dir,uni,4),ta=pk[j],tb=pk[k],key=a*T*T+Math.min(ta,tb)*T+Math.max(ta,tb);
     let o=oi.get(key);if(o===undefined){o=O.length;oi.set(key,o);const w=new Array(T).fill(0);w[ta]++;w[tb]++;O.push({v2:w,p:0});by[a].push(o)}O[o].p+=p*pj*p2}}}
  return{A,O,by}}
-function dist4rot(pk,n,dir){const L=pk.length,T=n+1,agg=new Map();for(const[m,p]of rotDist(L,dir,4)){const v=new Array(T).fill(0);for(let j=0;j<L;j++)if(m>>j&1)v[pk[j]]++;const k=v.join(),e=agg.get(k);if(e)e.p+=p;else agg.set(k,{v,p})}return[...agg.values()]}
+function dist4rot(pk,n,dir,uni){const L=pk.length,T=n+1,agg=new Map();for(const[m,p]of rotDist(L,dir,4,uni)){const v=new Array(T).fill(0);for(let j=0;j<L;j++)if(m>>j&1)v[pk[j]]++;const k=v.join(),e=agg.get(k);if(e)e.p+=p;else agg.set(k,{v,p})}return[...agg.values()]}
 let ROUND={board:'',balls:[],ord:{}},LAST=null,LOG=[];
 try{LOG=JSON.parse(localStorage.getItem('gp_log')||'[]')}catch(e){}
 function renderStair(){const b=ROUND.b;if(!b)return;const m={};ROUND.balls.forEach((k,i)=>m[k]=i+1);{const n=b.seq.length,w=$('stair').clientWidth||320,sz=Math.max(22,Math.min(40,Math.floor((w-(n-1)*6)/n)));$('stair').style.setProperty('--sz',sz+'px')}$('stair').innerHTML=stair(b,null,'',m);$('bst').textContent=`ボール ${ROUND.balls.length}/5`}
 function update(){
+ {const k=$('mc').value=='k'?'k':'n';if(mcKey!==k){mcKey=k;MCUR=MC[k];Object.assign(BET,MCUR.bet);for(let c=1;c<=5;c++)$('o'+c).value=MCUR.odds[c]}}
  for(let c=1;c<=5;c++)O[c]=+$('o'+c).value||O[c];
- const b=parse(),bm=$('bm').value,rd=$('rd').value=='r'?-1:1,P=+$('pl').value,mode=$('mode').value,TOL=Math.max(0,+$('tm').value||0);
+ const b=parse(),bm=$('bm').value,rd=-1,P=+$('pl').value,mode=$('mode').value,TOL=Math.max(0,+$('tm').value||0);
  const cl=x=>Math.min(1,Math.max(0,(+x||0)/100)),fs=cl($('fs').value),ft=cl($('ft').value);
  const view=$('view').value,me=Math.min(P,+$('me').value||1);$('mer').style.display=P>1?'':'none';save();
  const bk=b.seq.map(s=>s.o?'o':s.c).join('-');if(ROUND.board!==bk)ROUND={board:bk,balls:[],ord:{}};ROUND.b=b;renderStair();
- $('warn').innerHTML=`合計 ${b.len}/16マス(右端が1つ目)`;$('warn').style.color=b.len==16?'var(--ok)':b.len>16?'var(--hit)':'var(--mut)';
+ $('warn').innerHTML=`合計 ${b.len}/${MCUR.L}マス(右端が1つ目)`;$('warn').style.color=b.len==MCUR.L?'var(--ok)':b.len>MCUR.L?'var(--hit)':'var(--mut)';
  LAST=null;
  if(!b.n||b.n>8){$('res').textContent='盤面を入力してください。例: 4-3-お-3-2-2-1';return}
- const GR=bm=='rot'?dist5rot(b.pk,b.n,rd):dist5(b.pk,b.n,0),D=GR.O,G0=bm=='rot'?dist5(b.pk,b.n,0):GR;
+ const GR=dist5rot(b.pk,b.n,rd,bm=='uni'),D=GR.O,G0=dist5(b.pk,b.n,0);
  const kinds=$('kinds').value,cand=genP(b.cnt).filter(c=>c.t=='s'||(c.t=='g'&&kinds.includes('g'))||(c.t=='d'&&kinds.includes('d'))).map(c=>{
-  if(c.t=='s')c.pay=pays(c.S,b.cnt)*BET.s/10;
-  else{const pp=psup(c.S,G0);c.pay=Math.exp(CO[c.t][0]+CO[c.t][1]*Math.log(pp))*BET[c.t]}
+  if(c.t=='s')c.pay=pays(c.S,b.cnt)*BET.s/MCUR.b0;
+  else{const pp=psup(c.S,G0);c.pay=Math.exp(MCUR.co[c.t][0]+MCUR.co[c.t][1]*Math.log(pp))*BET[c.t]}
   c.h=plateHits(c.S,GR,c.t=='s'?fs:c.t=='g'?ft:0);c.pe=c.h.reduce((a,[j,h])=>a+D[j].p*h,0);
   c.net=c.pe*c.pay-BET[c.t];return c}).filter(c=>c.pe>0);
  cand.sort((x,y)=>y.net-x.net);
  const dopa=mode=='dopa';
  const pickSet=()=>{let bs=null,bq=-1e9,bB=0,bpool=null;
-  for(let B=5;B<=30*P;B+=5){
+  for(let B=5;B<=3*BET.s*P;B+=5){
    const pool=cand.filter(c=>c.pay>=TOL*B&&(dopa||c.net>0)),miss=new Float64Array(D.length).fill(1),set=[],used=new Set();let cost=0;
    while(set.length<3*P){let best=null,bg=-1e18;
     for(const c of pool){if(cost+BET[c.t]>B||used.has(c))continue;let g=0;for(const[j,h]of c.h)g+=D[j].p*miss[j]*h;if(g>bg){bg=g;best=c}}
@@ -231,7 +234,7 @@ function update(){
     if(best!==bs[i]){bs[i]=best;ch=true}}
    if(!ch)break}
   return bs};
- const D4=bm=='rot'?dist4rot(b.pk,b.n,rd):dist4(b.pk,b.n,0);
+ const D4=dist4rot(b.pk,b.n,rd,bm=='uni');
  const alive4=set=>{let x=0;D4.forEach(a=>{let pr=1;for(const c of set){const f=c.t=='s'?fs:c.t=='g'?ft:0;let m=0;for(let i=0;i<c.S.length;i++)m+=Math.max(0,c.S[i]-a.v[i]);pr*=1-(m<=1?1:m==2?f:0)}x+=a.p*(1-pr)});return x};
  const sel=pickSet(),gs=Array.from({length:P},()=>[]);
  if(sel)sel.forEach((c,i)=>{const r=Math.floor(i/P),p=i%P;gs[r%2?P-1-p:p].push(c)});
@@ -247,29 +250,29 @@ function update(){
   +`<details><summary>期待収支の高い注文ランキング</summary>`+cand.slice(0,8).map(c=>row(c,'var(--ink)',false)).join('')+`</details>`
   +`<p class="note">期待収支 = 1回あたりの戻りの平均 − BET(枚)。同じ種類の注文は重ねません。配当と確率は推定なので、実機の表示配当を右の欄に入力して記録してください。</p>`;
  const pos2=b.seq.map(s=>s.o?-1:s.i);
- LAST={bd:b.seq.map(s=>s.o?'お':s.c),pos2,P,mode,TOL,fs,ft,bm:bm=='rot'&&rd<0?'rot逆':bm,kinds,orders:gs.flatMap((g,k)=>g.map(c=>({k:k+1,c})))};
+ LAST={bd:b.seq.map(s=>s.o?'お':s.c),pos2,P,mode,TOL,fs,ft,bm,kinds,mc:mcKey,orders:gs.flatMap((g,k)=>g.map(c=>({k:k+1,c})))};
 }
 const bpos=(k)=>{if(k=='o')return'お';const[i,j]=k.split('-').map(Number);const p=ROUND.b.seq.findIndex(s=>!s.o&&s.i==i);return`${p+1}-${j+1}`};
 function toCSV(){
  const e=v=>{v=String(v??'');return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
- const h=['ラウンド','日時','モード','人数','配当下限倍率','FC舟盛り(%)','FC下駄(%)','ボールの入り方','注文の種類','注文No','持ち主','種類','BET','予測配当','実際の配当','FC','予測確率(%)','予測期待収支'];
+ const h=['ラウンド','日時','機種','モード','人数','配当下限倍率','FC舟盛り(%)','FC下駄(%)','ボールの入り方','注文の種類','注文No','持ち主','種類','BET','予測配当','実際の配当','FC','予測確率(%)','予測期待収支'];
  for(let i=1;i<=9;i++)h.push('盤面'+i,'選ぶ'+i);for(let i=1;i<=5;i++)h.push('ボール'+i);
  const rows=[h];
  LOG.forEach((r,ri)=>{r.ord.forEach((o,oi)=>{
-  const row=[ri+1,r.t,r.mode=='dopa'?'ドーパミン優先':'期待収支優先',r.P,r.TOL,Math.round(r.fs*100),Math.round(r.ft*100),(r.bm?(r.bm=='ind'?'完全ランダム':r.bm=='rot逆'?'回転でずれる(逆向き)':'回転でずれる'):'隣補正'+Math.round((r.q||0)*100)+'%'),({s:'舟盛りのみ',sg:'舟盛り+下駄',sd:'舟盛り+皿',sgd:'すべて'}[r.kinds]||''),oi+1,o.k,TN[o.t],BET[o.t],o.pay.toFixed(1),o.act,o.fc=='y'?'もらえた':o.fc=='n'?'なし':'',(o.pe*100).toFixed(2),o.net.toFixed(2)];
+  const row=[ri+1,r.t,(r.mc=='k'?'極':'ノーマル'),r.mode=='dopa'?'ドーパミン優先':'期待収支優先',r.P,r.TOL,Math.round(r.fs*100),Math.round(r.ft*100),(r.bm?(r.bm=='uni'?'均等(隣の入りやすさなし)':r.bm=='ind'?'完全ランダム(旧)':r.bm=='rot逆'?'回転でずれる(逆向き)':'回転でずれる'):'隣補正'+Math.round((r.q||0)*100)+'%'),({s:'舟盛りのみ',sg:'舟盛り+下駄',sd:'舟盛り+皿',sgd:'すべて'}[r.kinds]||''),oi+1,o.k,TN[o.t],(o.bet||BET[o.t]),o.pay.toFixed(1),o.act,o.fc=='y'?'もらえた':o.fc=='n'?'なし':'',(o.pe*100).toFixed(2),o.net.toFixed(2)];
   for(let i=0;i<9;i++){const x=r.bd[i];row.push(x===undefined?'':x,x===undefined||x==='お'?'':o.S[r.pos2[i]])}
   for(let i=0;i<5;i++)row.push(r.balls[i]||'');rows.push(row)})});
  return rows.map(r=>r.map(e).join(',')).join('\n');
 }
-const KEYS=['pl','me','view','mode','kinds','fs','ft','bm','rd','tm'];
+const KEYS=['mc','pl','me','view','mode','kinds','fs','ft','bm','tm'];
 function save(){try{KEYS.forEach(k=>localStorage.setItem('gp_'+k,$(k).value))}catch(e){}}
 function load(ks){try{ks.forEach(k=>{const v=localStorage.getItem('gp_'+k);if(v!==null)$(k).value=v})}catch(e){}}
 function syncMe(){const P=+$('pl').value,cur=+$('me').value;$('me').innerHTML=Array.from({length:P},(_,i)=>`<option value="${i+1}">${i+1}人目</option>`).join('');if(cur>=1&&cur<=P)$('me').value=cur}
-load(['pl']);syncMe();load(['me','view','mode','kinds','fs','ft','bm','rd','tm']);
+load(['pl']);syncMe();load(['mc','me','view','mode','kinds','fs','ft','bm','tm']);
 $('pad').innerHTML=['1','2','3','4','5','お','←','クリア'].map(t=>`<button type="button" class="${t=='お'?'o':''}" data-t="${t}">${t=='お'?'<i class="oyf"></i>':t}</button>`).join('');
 $('pad').onclick=e=>{const t=e.target.dataset.t;if(!t)return;const a=$('board').value.split(/[\s,、\-ー−–—]+/).filter(Boolean);if(t=='←')a.pop();else if(t=='クリア')a.length=0;else a.push(t);$('board').value=a.join('-');update()};
 $('pl').addEventListener('input',()=>{syncMe();update()});
-['board','fs','ft','bm','rd','me','view','mode','kinds','tm'].forEach(i=>$(i).addEventListener('input',update));
+['board','mc','fs','ft','bm','me','view','mode','kinds','tm'].forEach(i=>$(i).addEventListener('input',update));
 document.querySelectorAll('#o5 input').forEach(i=>i.addEventListener('input',update));
 $('stair').addEventListener('click',e=>{const c=e.target.closest('.cell');if(!c||!c.dataset.k)return;const k=c.dataset.k;if(ROUND.balls.includes(k)||ROUND.balls.length>=5)return;ROUND.balls.push(k);renderStair()});
 $('bundo').onclick=()=>{ROUND.balls.pop();renderStair()};$('bclr').onclick=()=>{ROUND.balls=[];renderStair()};
@@ -277,8 +280,8 @@ $('res').addEventListener('input',e=>{const t=e.target;if(t.classList.contains('
 $('res').addEventListener('change',e=>{const t=e.target;if(t.classList.contains('afc')){(ROUND.ord[t.dataset.key]=ROUND.ord[t.dataset.key]||{}).fc=t.value}});
 function saveLog(){try{localStorage.setItem('gp_log',JSON.stringify(LOG))}catch(e){}$('lcnt').textContent=LOG.length;$('csvout').value=LOG.length?toCSV():''}
 $('bsave').onclick=()=>{if(!LAST||!LAST.orders.length){alert('おすすめの注文がありません');return}
- const ord=LAST.orders.map(({k,c})=>{const st=ROUND.ord[c.t+'|'+c.S.join(',')]||{};return{k,t:c.t,S:c.S.slice(),pay:c.pay,pe:c.pe,net:c.net,act:st.pay===undefined?'':st.pay,fc:st.fc||''}});
- LOG.push({t:new Date().toISOString(),bd:LAST.bd,pos2:LAST.pos2,P:LAST.P,mode:LAST.mode,TOL:LAST.TOL,fs:LAST.fs,ft:LAST.ft,bm:LAST.bm,kinds:LAST.kinds,ord,balls:ROUND.balls.map(bpos)});
+ const ord=LAST.orders.map(({k,c})=>{const st=ROUND.ord[c.t+'|'+c.S.join(',')]||{};return{k,t:c.t,S:c.S.slice(),pay:c.pay,pe:c.pe,net:c.net,act:st.pay===undefined?'':st.pay,fc:st.fc||'',bet:BET[c.t]}});
+ LOG.push({t:new Date().toISOString(),bd:LAST.bd,pos2:LAST.pos2,P:LAST.P,mode:LAST.mode,TOL:LAST.TOL,fs:LAST.fs,ft:LAST.ft,bm:LAST.bm,kinds:LAST.kinds,mc:LAST.mc,ord,balls:ROUND.balls.map(bpos)});
  saveLog();ROUND={board:ROUND.board,b:ROUND.b,balls:[],ord:{}};update()};
 $('bdl').onclick=()=>{if(!LOG.length){alert('保存されたラウンドがありません');return}
  const blob=new Blob(['\ufeff'+toCSV()],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gappori-testplay-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove()};
