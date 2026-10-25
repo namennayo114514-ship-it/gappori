@@ -134,6 +134,7 @@ main>.note{background:rgba(255,255,255,.78);color:#3a4350;padding:8px 10px;borde
 @keyframes mpop{from{transform:translateY(40%) scale(.8);opacity:.2}to{transform:none;opacity:1}}@keyframes mhit{from{transform:scale(1.15)}to{transform:none}}
 .mgov{position:absolute;inset:0;z-index:10;border-radius:16px;background:rgba(255,250,240,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px}.mgov b{font-family:var(--pop);font-size:30px}.mgov span{font-size:13px;color:var(--mut)}
 .syst{font-weight:700;margin:2px 0 8px}.syst.ok{color:var(--ok)}.syst.err{color:var(--hit)}
+details.params>summary{cursor:pointer;list-style:revert}details.params[open]>summary{margin-bottom:8px}
 </style>
 </head><body><main>
 <div class="hero"><div class="t1">すしがっぽり</div><div class="bub">ドパドパしたいやつ集合！</div><i class="sp oyh"></i><div class="perch"><i class="sp c0" style="--w:76px;transform:rotate(-4deg)"></i><i class="sp c1" style="--w:72px;transform:rotate(3deg);margin-left:-8px"></i><i class="sp c6" style="--w:66px;transform:rotate(-3deg);margin-left:-8px"></i></div></div>
@@ -152,6 +153,7 @@ main>.note{background:rgba(255,255,255,.78);color:#3a4350;padding:8px 10px;borde
 <div class="circ" id="circ" style="display:none"></div>
 <div class="tip" id="warn"></div>
 <div class="rowb"><button class="btn pri bdone" type="button" style="display:none">注文完了 → ボール入力へ(円形に展開)</button><button class="btn" id="bback" type="button" style="display:none">← 盤面・注文に戻る</button><span id="bst" style="display:none">ボール 0/3</span><button class="btn pri" id="bfin" type="button" style="display:none">ボール入力完了</button><button class="btn" id="bundo" type="button" style="display:none">1つ戻す</button><button class="btn" id="bclr" type="button" style="display:none">ボールをクリア</button></div>
+<details class="params"><summary><b>人数・表示の設定</b>(端末が1台のとき)</summary>
 <div class="row">
 <div><label for="pl">人数(1人3注文まで)</label><select id="pl"><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="6">6人</option><option value="7">7人</option><option value="8">8人</option></select></div>
 
@@ -160,10 +162,11 @@ main>.note{background:rgba(255,255,255,.78);color:#3a4350;padding:8px 10px;borde
 <div><label for="me">あなたは</label><select id="me"></select></div>
 <div><label for="view">表示</label><select id="view"><option value="all">全員分</option><option value="me">自分の分だけ</option></select></div>
 </div>
-<div class="params"><b>詳細パラメーター</b>
+</details>
+<details class="params"><summary><b>詳細パラメーター</b></summary>
 <div class="row"><div><label for="tm">配当の下限(倍)</label><input id="tm" type="number" value="1" step="0.05" min="0"></div>
 <div><label for="fs">舟盛りFC(%)</label><input id="fs" type="number" value="80" min="0" max="100"></div></div>
-<details><summary>舟盛りの配当モデル(個数1〜5の1球あたり倍率)</summary><div class="o5" id="o5"></div></details></div>
+<details><summary>舟盛りの配当モデル(個数1〜5の1球あたり倍率)</summary><div class="o5" id="o5"></div></details></details>
 </section>
 
 <section><i class="sp dec c3" style="--w:70px;transform:rotate(-6deg)"></i><h2>おすすめの注文</h2>
@@ -384,7 +387,7 @@ function alive4K(b,kn,all,fl){
  return x}
 function renderOrders(){
  const C=CALC,b=ROUND.b;if(!C||!b)return;
- const view=$('view').value,me=Math.max(1,+$('me').value||1),dopa=C.mode=='dopa',inB=PH=='b'&&!!ROUND.fz,fs=C.fs;
+ const inRoom=!!(SY.code&&SY.slot),view=inRoom?'me':$('view').value,me=inRoom?SY.slot:Math.max(1,+$('me').value||1),dopa=C.mode=='dopa',inB=PH=='b'&&!!ROUND.fz,fs=C.fs;
  let gs,sel=null;
  if(inB)gs=ROUND.fz;
  else{sel=dopa?dopaPick(C,TH):C.sel;const P=C.P;gs=Array.from({length:P},()=>[]);
@@ -409,11 +412,12 @@ function renderOrders(){
  $('res').innerHTML=head
   +gs.map((g,k)=>{if(!g.length||(view=='me'&&P>1&&k!=me-1))return'';
    const co=g.length*BET.s,e=g.reduce((a,c)=>a+c.net,0);
-   return`<div class="pl" style="--c:${PC[k%8]}"><div class="ph"><b>${P==1?(inB?'注文':'おすすめ'):view=='me'?`あなた(${k+1}人目)`:`${k+1}人目`}</b><span>投入${co}枚${inB?'':`・どれか当たる確率 ${pc(unionP(C.D,g))}`}・期待収支 ${fm(e)}</span></div>`+g.map(c=>row(c,PC[k%8],inB?'b':'o',ctx)).join('')+'</div>'}).join('')
+   return`<div class="pl" style="--c:${PC[k%8]}"><div class="ph"><b>${P==1?(inB?'注文':'おすすめ'):view=='me'?`あなた(${k+1}P)`:`${k+1}P`}</b><span>投入${co}枚${inB?'':`・どれか当たる確率 ${pc(unionP(C.D,g))}`}・期待収支 ${fm(e)}</span></div>`+g.map(c=>row(c,PC[k%8],inB?'b':'o',ctx)).join('')+'</div>'}).join('')
   +(inB?'':`<details><summary>期待収支の高い注文ランキング</summary>`+C.cand.slice(0,8).map(c=>row(c,'var(--ink)','r',ctx)).join('')+`</details>`)
   +`<p class="note">期待収支 = 1回あたりの戻りの平均 − BET(枚)。配当と確率は推定なので、実機の表示配当を右の欄に入力して記録してください。</p>`;
  const pos2=b.seq.map(s=>s.o?-1:s.i);
  LAST={bd:b.seq.map(s=>s.o?'お':s.c),pos2,P,mode:C.mode,TOL:C.TOL,fs,ft:0,bm:'rot',kinds:'s',mc:mcKey,oya:OYA,orders:gs.flatMap((g,k)=>g.map(c=>({k:k+1,c})))}}
+const jumpFC=()=>{try{$('res').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}};
 function refresh(){if(ROUND.b){renderBoard(ROUND.b);renderOrders()}syDirty()}
 /* ---------- 更新 ---------- */
 const cl=x=>Math.min(1,Math.max(0,(+x||0)/100));
@@ -454,9 +458,9 @@ $('pl').addEventListener('input',()=>{syncMe();update()});
 ['board','mc','fs','me','view','tm'].forEach(i=>$(i).addEventListener('input',update));
 document.querySelectorAll('#o5 input').forEach(i=>i.addEventListener('input',update));
 $('stair').addEventListener('click',e=>{const g=e.target.closest('[data-g]');if(!g)return;const k=+g.dataset.g;OYA=OYA==k?0:k;update()});
-$('circ').addEventListener('click',e=>{const c=e.target.closest('[data-ix]');if(!c)return;const ix=+c.dataset.ix,p=ROUND.balls.indexOf(ix);if(p>=0)ROUND.balls.splice(p,1);else if(ROUND.balls.length<3)ROUND.balls.push(ix);refresh()});
+$('circ').addEventListener('click',e=>{const c=e.target.closest('[data-ix]');if(!c)return;const ix=+c.dataset.ix,p=ROUND.balls.indexOf(ix);if(p>=0)ROUND.balls.splice(p,1);else if(ROUND.balls.length<3){ROUND.balls.push(ix);if(ROUND.balls.length==3){refresh();setTimeout(jumpFC,350);return}}refresh()});
 document.querySelectorAll('.bdone').forEach(x=>x.onclick=()=>{if(!CUR||!CUR.flat().length){alert('おすすめの注文がありません');return}ROUND.fz=CUR.map(g=>g.slice());PH='b';update();try{$('circ').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}});
-$('bfin').onclick=()=>{try{$('res').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}};
+$('bfin').onclick=jumpFC;
 $('bback').onclick=()=>{PH='o';ROUND.fz=null;update()};
 $('bundo').onclick=()=>{ROUND.balls.pop();refresh()};$('bclr').onclick=()=>{ROUND.balls=[];refresh()};
 let raf=0;const rq=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(renderOrders)};
@@ -484,11 +488,11 @@ $('bdel').onclick=()=>{if(confirm('保存したラウンドを全部消します
 saveLog();
 /* ---------- 同期(Supabase): 入力だけを共有し、計算は各端末で行う ---------- */
 const SB_URL='https://oeiibnwqnfwroelefaka.supabase.co',SB_KEY='sb_publishable_qvsnpZnF07z5RRMtux1Fvg_wbZpXq0G';
-const SY={cid:Math.random().toString(36).slice(2,10),code:'',rev:0,applying:false,timer:0,ch:null,sb:null,n:1,live:false,chain:Promise.resolve(),msg:''};
+const SY={slot:0,t:0,pref:0,cid:Math.random().toString(36).slice(2,10),code:'',rev:0,applying:false,timer:0,ch:null,sb:null,n:1,live:false,chain:Promise.resolve(),msg:''};
 function update(){update0();syDirty()}
 function syStatus(msg,err){
  if(msg!==undefined)SY.msg=msg;const el=$('sst');
- const base=SY.code?(SY.live?`ルーム ${SY.code} ・ ${SY.n}台接続中`:`ルーム ${SY.code} ・ 再接続中…`):'未接続(コードを入れて「参加」か「新規作成」)';
+ const base=SY.code?(SY.live?`ルーム ${SY.code} ・ ${SY.slot?`あなたは${SY.slot}P ・ `:''}${SY.n}台接続中`:`ルーム ${SY.code} ・ 再接続中…`):'未接続(コードを入れて「参加」か「新規作成」)';
  el.textContent=SY.msg&&err?SY.msg:base;el.className='syst'+(err?' err':SY.code&&SY.live?' ok':'');
  $('rleave').style.display=SY.code?'':'none';$('rnew').style.display=SY.code?'none':'';$('rjoin').style.display=SY.code?'none':''}
 function snapshot(){return{mc:$('mc').value,pl:+$('pl').value,board:$('board').value,oya:OYA,th:TH,tm:$('tm').value,fs:$('fs').value,odds:[1,2,3,4,5].map(c=>O[c]),ph:PH,balls:ROUND.balls.slice(),ord:ROUND.ord,fz:ROUND.fz?ROUND.fz.map(g=>g.map(c=>c.S)):null}}
@@ -499,7 +503,7 @@ function syPush(){
  SY.chain=SY.chain.then(()=>SY.sb.from('rooms').upsert(row)).then(r=>{if(r&&r.error)syStatus('送信エラー: '+r.error.message,true)}).catch(e=>syStatus('送信エラー: '+e.message,true));
  return SY.chain}
 function syApply(st){
- SY.applying=true;
+ SY.applying=true;const pb=ROUND.balls.length;
  try{
   if(st.mc)$('mc').value=st.mc;
   $('pl').value=st.pl||1;syncMe();$('board').value=st.board||'';
@@ -509,32 +513,45 @@ function syApply(st){
   OYA=st.oya||0;TH=st.th??30;ROUND.balls=(st.balls||[]).slice(0,3);ROUND.ord=st.ord||{};PH='o';ROUND.fz=null;
   update0();
   if(st.ph=='b'&&st.fz&&CALC){const m=new Map(CALC.cand.map(c=>[key(c),c]));const fz=st.fz.map(g=>g.map(S=>m.get('s|'+S.join(','))).filter(Boolean));if(fz.flat().length){ROUND.fz=fz;PH='b';update0()}}
+  if(PH=='b'&&pb<3&&ROUND.balls.length==3)setTimeout(jumpFC,350);
  }finally{SY.applying=false}}
 async function syPull(){
  if(!SY.code||!SY.sb)return;
  const r=await SY.sb.from('rooms').select('state,rev').eq('code',SY.code).maybeSingle();
  if(r.error||!r.data||!r.data.state)return;
  if((r.data.rev||0)>SY.rev&&r.data.state.by!==SY.cid){SY.rev=r.data.rev;syApply(r.data.state)}}
+function sySlotSync(){
+ if(!SY.ch)return;
+ const st=SY.ch.presenceState(),list=Object.entries(st).map(([k,v])=>Object.assign({cid:k},v[v.length-1]||{})),others=list.filter(x=>x.cid!==SY.cid);
+ SY.n=others.length+1;
+ const used=new Set(others.map(o=>o.slot).filter(Boolean));
+ let need=!SY.slot;
+ if(SY.slot&&others.some(o=>o.slot===SY.slot&&(o.t<SY.t||(o.t===SY.t&&o.cid<SY.cid))))need=true;
+ if(need){let n=SY.pref&&!used.has(SY.pref)?SY.pref:1;while(used.has(n))n++;
+  SY.slot=n;SY.t=SY.t||Date.now();try{localStorage.setItem('gp_slot_'+SY.code,n)}catch(e){}
+  try{SY.ch.track({slot:n,t:SY.t})}catch(e){}
+  if(n>(+$('pl').value||1)){$('pl').value=n;syncMe();update()}else renderOrders()}
+ syStatus('')}
 async function syLeave(keep){
  clearTimeout(SY.timer);
  if(SY.ch&&SY.sb){try{await SY.sb.removeChannel(SY.ch)}catch(e){}}
- SY.ch=null;SY.code='';SY.live=false;SY.n=1;
- if(!keep){try{localStorage.removeItem('gp_room')}catch(e){}syStatus('')}}
+ const old=SY.code;SY.ch=null;SY.code='';SY.live=false;SY.n=1;SY.slot=0;SY.t=0;
+ if(!keep){try{localStorage.removeItem('gp_room');localStorage.removeItem('gp_slot_'+old)}catch(e){}syStatus('');renderOrders()}}
 async function syJoin(code){
  if(!window.supabase){syStatus('同期ライブラリを読み込めませんでした(オフラインかも)',true);return}
  code=(code||'').trim().toUpperCase();
  if(!/^[A-Z0-9]{4,8}$/.test(code)){syStatus('コードは英数字4〜8文字です',true);return}
  SY.sb=SY.sb||window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
- await syLeave(true);SY.code=code;syStatus('接続中…');
+ await syLeave(true);SY.code=code;SY.pref=0;try{SY.pref=+localStorage.getItem('gp_slot_'+code)||0}catch(e){}syStatus('接続中…');
  const r=await SY.sb.from('rooms').select('state,rev').eq('code',code).maybeSingle();
  if(r.error){SY.code='';syStatus('接続エラー: '+r.error.message,true);return}
  if(r.data&&r.data.state&&Object.keys(r.data.state).length){SY.rev=r.data.rev||0;syApply(r.data.state)}
  else await syPush();
  SY.ch=SY.sb.channel('room-'+code,{config:{presence:{key:SY.cid}}})
   .on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'code=eq.'+code},p=>{const row=p.new;if(!row||!row.state||row.state.by===SY.cid)return;SY.rev=Math.max(SY.rev,row.rev||0);syApply(row.state)})
-  .on('presence',{event:'sync'},()=>{SY.n=Object.keys(SY.ch.presenceState()).length||1;syStatus()})
+  .on('presence',{event:'sync'},sySlotSync)
   .subscribe(async st=>{
-   if(st==='SUBSCRIBED'){SY.live=true;try{await SY.ch.track({at:Date.now()})}catch(e){}syStatus('');syPull()}
+   if(st==='SUBSCRIBED'){SY.live=true;syStatus('');syPull();setTimeout(()=>{if(SY.ch&&!SY.slot)sySlotSync()},700)}
    else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){SY.live=false;syStatus('')}});
  try{localStorage.setItem('gp_room',code)}catch(e){}
  $('rc').value=code;syStatus('')}
