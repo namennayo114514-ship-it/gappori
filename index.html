@@ -169,7 +169,7 @@ details.params>summary{cursor:pointer;list-style:revert}details.params[open]>sum
 <details><summary>舟盛りの配当モデル(個数1〜5の1球あたり倍率)</summary><div class="o5" id="o5"></div></details></details>
 </section>
 
-<section><i class="sp dec c3" style="--w:70px;transform:rotate(-6deg)"></i><h2>おすすめの注文</h2>
+<section id="osec"><i class="sp dec c3" style="--w:70px;transform:rotate(-6deg)"></i><h2>おすすめの注文</h2>
 <div class="params dp" id="dopa" style="display:none"><b>どれか当たる確率の下限</b>
 <div class="rowb"><input id="th" type="range" min="0" max="100" step="1" value="30"><span class="thw"><input id="thn" type="number" min="0" max="100" step="1" value="30" inputmode="numeric">%</span></div>
 </div>
@@ -417,6 +417,7 @@ function renderOrders(){
   +`<p class="note">期待収支 = 1回あたりの戻りの平均 − BET(枚)。配当と確率は推定なので、実機の表示配当を右の欄に入力して記録してください。</p>`;
  const pos2=b.seq.map(s=>s.o?-1:s.i);
  LAST={bd:b.seq.map(s=>s.o?'お':s.c),pos2,P,mode:C.mode,TOL:C.TOL,fs,ft:0,bm:'rot',kinds:'s',mc:mcKey,oya:OYA,orders:gs.flatMap((g,k)=>g.map(c=>({k:k+1,c})))}}
+const jumpOrders=()=>{try{$('osec').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}};
 const jumpFC=()=>{try{$('res').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}};
 function refresh(){if(ROUND.b){renderBoard(ROUND.b);renderOrders()}syDirty()}
 /* ---------- 更新 ---------- */
@@ -457,8 +458,8 @@ $('pad').onclick=e=>{const t=e.target.dataset.t;if(!t)return;const a=cols().map(
 $('pl').addEventListener('input',()=>{syncMe();update()});
 ['board','mc','fs','me','view','tm'].forEach(i=>$(i).addEventListener('input',update));
 document.querySelectorAll('#o5 input').forEach(i=>i.addEventListener('input',update));
-$('stair').addEventListener('click',e=>{const g=e.target.closest('[data-g]');if(!g)return;const k=+g.dataset.g;OYA=OYA==k?0:k;update()});
-$('circ').addEventListener('click',e=>{const c=e.target.closest('[data-ix]');if(!c)return;const ix=+c.dataset.ix,p=ROUND.balls.indexOf(ix);if(p>=0)ROUND.balls.splice(p,1);else if(ROUND.balls.length<3){ROUND.balls.push(ix);if(ROUND.balls.length==3){refresh();setTimeout(jumpFC,350);return}}refresh()});
+$('stair').addEventListener('click',e=>{const g=e.target.closest('[data-g]');if(!g)return;const k=+g.dataset.g;OYA=OYA==k?0:k;update();if(OYA)setTimeout(jumpOrders,200)});
+$('circ').addEventListener('click',e=>{const c=e.target.closest('[data-ix]');if(!c)return;const ix=+c.dataset.ix,p=ROUND.balls.indexOf(ix);if(p>=0)ROUND.balls.splice(p,1);else if(ROUND.balls.length<3)ROUND.balls.push(ix);refresh()});
 document.querySelectorAll('.bdone').forEach(x=>x.onclick=()=>{if(!CUR||!CUR.flat().length){alert('おすすめの注文がありません');return}ROUND.fz=CUR.map(g=>g.slice());PH='b';update();try{$('circ').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}});
 $('bfin').onclick=jumpFC;
 $('bback').onclick=()=>{PH='o';ROUND.fz=null;update()};
@@ -503,7 +504,7 @@ function syPush(){
  SY.chain=SY.chain.then(()=>SY.sb.from('rooms').upsert(row)).then(r=>{if(r&&r.error)syStatus('送信エラー: '+r.error.message,true)}).catch(e=>syStatus('送信エラー: '+e.message,true));
  return SY.chain}
 function syApply(st){
- SY.applying=true;const pb=ROUND.balls.length;
+ SY.applying=true;
  try{
   if(st.mc)$('mc').value=st.mc;
   $('pl').value=st.pl||1;syncMe();$('board').value=st.board||'';
@@ -513,7 +514,6 @@ function syApply(st){
   OYA=st.oya||0;TH=st.th??30;ROUND.balls=(st.balls||[]).slice(0,3);ROUND.ord=st.ord||{};PH='o';ROUND.fz=null;
   update0();
   if(st.ph=='b'&&st.fz&&CALC){const m=new Map(CALC.cand.map(c=>[key(c),c]));const fz=st.fz.map(g=>g.map(S=>m.get('s|'+S.join(','))).filter(Boolean));if(fz.flat().length){ROUND.fz=fz;PH='b';update0()}}
-  if(PH=='b'&&pb<3&&ROUND.balls.length==3)setTimeout(jumpFC,350);
  }finally{SY.applying=false}}
 async function syPull(){
  if(!SY.code||!SY.sb)return;
